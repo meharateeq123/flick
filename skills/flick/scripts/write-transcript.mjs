@@ -3,7 +3,7 @@ import {readFile, writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 
 const args = process.argv.slice(2);
-const valueAfter = (flag) => args[args.indexOf(flag) + 1];
+const valueAfter = (flag) => (args.includes(flag) ? args[args.indexOf(flag) + 1] : undefined);
 const textFile = valueAfter('--text-file');
 const project = resolve(valueAfter('--project') || 'flick-output');
 if (!textFile) throw new Error('Usage: node write-transcript.mjs --text-file <path> --project <flick-output>');

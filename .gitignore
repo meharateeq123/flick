@@ -4,6 +4,7 @@ out/
 .DS_Store
 *.log
 __pycache__/
+.env
 flick-output/
 flick-output-*/
 flick-*/
@@ -20,3 +21,7 @@ flick-*/
 **/transcript.json
 **/scene-spec.json
 !skills/flick/assets/starter-remotion/src/data/scene-spec.json
+.qc_framing_tmp/
+analysis/
+INPUT/
+*.lnk

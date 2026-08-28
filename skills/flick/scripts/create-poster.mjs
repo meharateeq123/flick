@@ -5,7 +5,7 @@ import {createRequire} from 'node:module';
 import {resolve} from 'node:path';
 
 const args = process.argv.slice(2);
-const valueAfter = (flag) => args[args.indexOf(flag) + 1];
+const valueAfter = (flag) => (args.includes(flag) ? args[args.indexOf(flag) + 1] : undefined);
 const project = resolve(valueAfter('--project') || 'flick-output');
 const name = valueAfter('--name');
 const timestamp = Number(valueAfter('--timestamp'));

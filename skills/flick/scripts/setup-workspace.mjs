@@ -5,7 +5,7 @@ import {fileURLToPath} from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
-const valueAfter = (flag) => args[args.indexOf(flag) + 1];
+const valueAfter = (flag) => (args.includes(flag) ? args[args.indexOf(flag) + 1] : undefined);
 const project = resolve(valueAfter('--project') || 'flick-output');
 const template = resolve(here, '../assets/starter-remotion');
 

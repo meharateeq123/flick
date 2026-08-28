@@ -11,6 +11,8 @@ Turn a transcript into original scene animations.
 
 Recognize `/flick` in Claude Code and `$flick` in Codex. Flick runs transcription, planning, Remotion building, preview, revision, and reusable-animation saving in one workflow.
 
+Read [references/RULEBOOK.md](references/RULEBOOK.md) once at the start of any run — it indexes every standing visual/footage/motion-graphic rule that governs how scenes are chosen and built throughout this skill.
+
 ## What this skill does
 
 1. Gets a video, public video link, or pasted transcript.
@@ -77,6 +79,40 @@ Then ask exactly, in this order:
 3. What do you think? Your opinion will make your animation much better.
 
 Gate: `transcript.json` exists and the user has answered those three questions.
+
+### Optional: auto-fetch matching footage
+
+If the user wants Flick to find its own B-roll instead of supplying assets, run:
+
+```text
+node <flick-skill>/scripts/auto-footage.mjs --project <output-directory>
+```
+
+This reads `transcript.json`, builds a short search query per scene, and downloads only a short matching clip per scene — as long as the scene needs, but never more than 10 seconds and never the full video — into `<output-directory>/brand-assets/auto-footage/`. Pass `--max-seconds <n>` to change the 10s cap.
+
+Read [references/visual-relevancy-rules.md](references/visual-relevancy-rules.md), [references/character-visual-rules.md](references/character-visual-rules.md), [references/footage-rules.md](references/footage-rules.md), and [references/original-motion-graphics-rule.md](references/original-motion-graphics-rule.md) before running this step. `footage-rules.md` governs what to strip from a clip before use: no separate logo/intro opener, no baked-in source text/logos/watermarks/lower-thirds — clean footage only, with source attribution added afterward as a small separate credit card rather than kept from the original graphic. `original-motion-graphics-rule.md` governs the small share of scenes `auto-footage.mjs` reserves rather than downloads: those must be authored from scratch in the Step 3 Remotion build — never sourced as an existing animated clip from YouTube or anywhere else. Together they are the binding standard for what counts as an acceptable visual: every scene must pass script + visual + temporal relevance and connect to the scene before and after it — never generic filler picked just because it shares one keyword or a broad category (a race car, a person, a stadium, NASCAR branding) — and any named person must be shown as that exact person (their footage, or their authentic image if no suitable footage exists), never generic or unidentified. Reject a low-relevance clip and search again with a more specific query rather than accepting it. When presenting a beat sheet to the user, follow the reference layout described at the end of character-visual-rules.md.
+
+Visual choice is **footage-led and content-relevance-driven, not a fixed percentage quota**, decided independently per scene:
+
+1. **Video clip — default.** Always tried first, for almost every line: events, actions, locations, processes, vehicles, sports, technology, etc. Tries **YouTube** (via `yt-dlp`) → **Pexels** → **Pixabay** → **Wikimedia Commons**, keeping the first that succeeds.
+2. **Image — only when no clip is available, or a specific named person is the subject.** If the line names a specific person (an athlete, historical figure, etc.), the script searches for that exact person's name so the visual matches them — never generic footage of someone else. If no clip was found and no person is named, a general-topic image is tried as a fallback before giving up.
+3. **Motion graphic — last resort, reserved (not downloaded) for Flick's Remotion build in Step 3.** Only used when no clip was found for a data-driven line: exact statistics, percentages, dates/timelines, or comparisons that footage can't convey clearly.
+
+Nothing is picked just to hit a mix percentage — a highly relevant clip always beats a generic image, and a motion graphic is never added merely for visual variety. Pass `--motion-scenes 2,5` (1-based scene numbers) to force specific scenes straight to a motion graphic regardless of the automatic decision.
+
+To redo just the scene(s) the user flags as wrong — without re-fetching everything — delete that scene's file from `brand-assets/auto-footage/` and re-run with `--only 6,10` (1-based scene numbers). Every other already-downloaded scene is left untouched.
+
+Pexels/Pixabay need `PEXELS_API_KEY` / `PIXABAY_API_KEY` in a `.env` file at the flick repo root or the project directory; if absent, those two sources are skipped automatically. Warn the user that downloaded clips may be copyrighted and are for personal/reference use only — confirm before using them in anything published.
+
+### Optional: assemble a rough-cut preview
+
+After `auto-footage.mjs` has downloaded clips, stitch them into one video matched to the transcript's scene timing:
+
+```text
+node <flick-skill>/scripts/assemble-video.mjs --project <output-directory> --aspect 9:16
+```
+
+Add `--voiceover <audio-file>` once the user has a recorded voiceover to mux it in; without it, this produces a silent rough-cut at `<output-directory>/preview.mp4` so the user can review pacing before recording. This rough-cut path is for the user's own reference/preview — it is separate from Flick's normal Remotion animation build in Step 3.
 
 ## Step 2: Plan and get approval
 

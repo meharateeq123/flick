@@ -4,7 +4,7 @@ import {spawnSync} from 'node:child_process';
 import {resolve} from 'node:path';
 
 const args = process.argv.slice(2);
-const valueAfter = (flag) => args[args.indexOf(flag) + 1];
+const valueAfter = (flag) => (args.includes(flag) ? args[args.indexOf(flag) + 1] : undefined);
 const project = resolve(valueAfter('--project') || 'flick-output');
 const composition = valueAfter('--composition');
 const name = valueAfter('--name');
